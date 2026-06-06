@@ -92,6 +92,78 @@ struct PreviewAppMacroTests {
     }
 
     @Test
+    func `完全修飾名の WindowContentScene に @PreviewApp を付与`() {
+        assertMacroExpansion(
+            """
+            @PreviewApp
+            struct QualifiedScene: ContainerizedWindowArchitecture.WindowContentScene {
+                init() {}
+                var body: some Scene {
+                    WindowGroup {
+                        Text("Hello")
+                    }
+                }
+            }
+            """,
+            expandedSource: """
+                struct QualifiedScene: ContainerizedWindowArchitecture.WindowContentScene {
+                    init() {}
+                    var body: some Scene {
+                        WindowGroup {
+                            Text("Hello")
+                        }
+                    }
+                }
+
+                struct QualifiedScenePreviewApp: App {
+                    init() {}
+
+                    var body: some Scene {
+                        QualifiedScene()
+                    }
+                }
+                """,
+            macros: macros
+        )
+    }
+
+    @Test
+    func `Module Name Selector の WindowContentScene に @PreviewApp を付与`() {
+        assertMacroExpansion(
+            """
+            @PreviewApp
+            struct ModuleSelectorScene: ContainerizedWindowArchitecture::WindowContentScene {
+                init() {}
+                var body: some Scene {
+                    WindowGroup {
+                        Text("Hello")
+                    }
+                }
+            }
+            """,
+            expandedSource: """
+                struct ModuleSelectorScene: ContainerizedWindowArchitecture::WindowContentScene {
+                    init() {}
+                    var body: some Scene {
+                        WindowGroup {
+                            Text("Hello")
+                        }
+                    }
+                }
+
+                struct ModuleSelectorScenePreviewApp: App {
+                    init() {}
+
+                    var body: some Scene {
+                        ModuleSelectorScene()
+                    }
+                }
+                """,
+            macros: macros
+        )
+    }
+
+    @Test
     func `型名が Scene で終わらない場合は末尾に PreviewApp を追加`() {
         assertMacroExpansion(
             """

@@ -26,12 +26,15 @@ public struct PreviewAppMacro: PeerMacro {
             ])
         }
 
-        // 継承句から WindowContentScene に適合していることを検証
         let inheritedTypes =
             structDecl.inheritanceClause?.inheritedTypes.map {
                 $0.type.trimmedDescription
             } ?? []
-        let hasWindowContentScene = inheritedTypes.contains("WindowContentScene")
+        let hasWindowContentScene = inheritedTypes.contains { inheritedType in
+            inheritedType == "WindowContentScene"
+                || inheritedType.hasSuffix(".WindowContentScene")
+                || inheritedType.hasSuffix("::WindowContentScene")
+        }
         guard hasWindowContentScene else {
             throw DiagnosticsError(diagnostics: [
                 Diagnostic(
