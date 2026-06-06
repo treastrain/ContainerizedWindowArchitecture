@@ -34,6 +34,14 @@ public struct AnyWindowContent: WindowContent {
     public var id: String { content.id }
     public var titleResource: LocalizedStringResource { content.titleResource }
 
+    private var contentTypeName: String {
+        WindowContentRegistry.typeName(for: type(of: content))
+    }
+
+    private var payloadHashValue: AnyHashable {
+        AnyHashable(content)
+    }
+
     public init(erasing windowContent: some WindowContent) {
         self.content = windowContent
     }
@@ -71,18 +79,24 @@ public struct AnyWindowContent: WindowContent {
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+        hasher.combine(contentTypeName)
+        hasher.combine(payloadHashValue)
     }
 
 }
 
 extension AnyWindowContent: Equatable {
     public static func == (lhs: AnyWindowContent, rhs: AnyWindowContent) -> Bool {
-        lhs.id == rhs.id
+        lhs.contentTypeName == rhs.contentTypeName
+            && lhs.payloadHashValue == rhs.payloadHashValue
     }
 }
 
 extension WindowContent {
+    var rootView: AnyView {
+        AnyView(RootView(windowContent: self))
+    }
+
     static func decodePayload(from container: KeyedDecodingContainer<AnyWindowContent.CodingKeys>) throws -> any WindowContent {
         return try container.decode(Self.self, forKey: AnyWindowContent.CodingKeys.payload)
     }
@@ -106,10 +120,4 @@ enum WindowContentRegistry {
 
 extension EnvironmentValues {
     @Entry public var windowContentID: String? = nil
-}
-
-extension WindowContent {
-    public var rootView: AnyView {
-        AnyView(RootView(windowContent: self))
-    }
 }

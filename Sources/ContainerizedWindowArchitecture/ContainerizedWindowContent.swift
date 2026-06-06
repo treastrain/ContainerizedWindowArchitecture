@@ -20,7 +20,7 @@ public struct ContainerizedWindowContent: View {
         }
 
         currentContent.content.rootView
-            .id(currentContent.id)
+            .id(currentContent)
             .environment(\.windowContentID, currentContent.id)
             .environment(\.switchWindow, switchAction)
     }
